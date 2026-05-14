@@ -54,7 +54,7 @@ def _make_target_description(target: str, key: str) -> CheckOnlineBinarySensorDe
         translation_key=key,
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         value_fn=_make_target_value_fn(target),
     )
 

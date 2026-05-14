@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -26,3 +27,12 @@ class CheckOnlineEntity(CoordinatorEntity[CheckOnlineCoordinator]):
             identifiers={(DOMAIN, entry_id)},
             name="Check Online",
         )
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Write state only when it has actually changed."""
+        if (current := self.hass.states.get(self.entity_id)) is not None:
+            new_state = self.state
+            if new_state is not None and current.state == str(new_state):
+                return
+        self.async_write_ha_state()

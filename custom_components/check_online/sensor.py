@@ -52,7 +52,7 @@ def _make_rtt_description(target: str, key: str) -> CheckOnlineSensorDescription
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         value_fn=_make_rtt_value_fn(target),
     )
 
@@ -62,7 +62,7 @@ LAST_ONLINE_SENSOR = CheckOnlineSensorDescription(
     translation_key="last_online",
     device_class=SensorDeviceClass.TIMESTAMP,
     entity_category=EntityCategory.DIAGNOSTIC,
-    entity_registry_enabled_default=False,
+    entity_registry_enabled_default=True,
     value_fn=lambda data: data.last_online,
 )
 
@@ -71,7 +71,7 @@ CONSECUTIVE_FAILURES_SENSOR = CheckOnlineSensorDescription(
     translation_key="consecutive_failures",
     state_class=SensorStateClass.MEASUREMENT,
     entity_category=EntityCategory.DIAGNOSTIC,
-    entity_registry_enabled_default=False,
+    entity_registry_enabled_default=True,
     value_fn=lambda data: data.consecutive_failures,
 )
 

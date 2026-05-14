@@ -76,7 +76,7 @@ async def _setup_integration(
 class TestRttSensors:
     """Tests for round-trip time sensors."""
 
-    async def test_all_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+    async def test_all_enabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -84,7 +84,7 @@ class TestRttSensors:
         for i in range(1, 4):
             entity = ent_reg.async_get(f"sensor.check_online_target_{i}_rtt")
             assert entity is not None
-            assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+            assert entity.disabled_by is None
 
     async def test_entity_category_diagnostic(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
@@ -99,24 +99,24 @@ class TestRttSensors:
 class TestLastOnlineSensor:
     """Tests for the last_online timestamp sensor."""
 
-    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+    async def test_enabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
         ent_reg = er.async_get(hass)
         entity = ent_reg.async_get("sensor.check_online_last_online")
         assert entity is not None
-        assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+        assert entity.disabled_by is None
 
 
 class TestConsecutiveFailuresSensor:
     """Tests for the consecutive_failures sensor."""
 
-    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+    async def test_enabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
         ent_reg = er.async_get(hass)
         entity = ent_reg.async_get("sensor.check_online_consecutive_failures")
         assert entity is not None
-        assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+        assert entity.disabled_by is None
