@@ -60,6 +60,9 @@
       "last_online": {
         "name": "Last online"
       },
+      "last_offline": {
+        "name": "Last offline"
+      },
       "consecutive_failures": {
         "name": "Consecutive failures"
       }

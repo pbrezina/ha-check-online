@@ -234,3 +234,76 @@ class TestLastOnline:
             await coordinator.async_refresh()
         assert coordinator.data.is_online is False
         assert coordinator.data.last_online == last_online
+
+
+class TestLastOffline:
+    """Tests for last_offline timestamp tracking."""
+
+    async def test_none_when_online(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """last_offline should be None when the system has never gone offline."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        assert coordinator.data.last_offline is None
+
+    async def test_set_when_going_offline(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """last_offline should be set when the system transitions to offline."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        assert coordinator.data.is_online is False
+        assert coordinator.data.last_offline is not None
+
+    async def test_preserved_when_back_online(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """last_offline should be preserved when the system goes back online."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        # Go offline
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        last_offline = coordinator.data.last_offline
+        assert last_offline is not None
+
+        # Go back online
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        assert coordinator.data.is_online is True
+        assert coordinator.data.last_offline == last_offline
+
+    async def test_updated_on_new_offline_transition(
+        self, hass: HomeAssistant, default_options: dict[str, Any]
+    ) -> None:
+        """last_offline should update when going offline again after being online."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        # Go offline
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        first_offline = coordinator.data.last_offline
+        assert first_offline is not None
+
+        # Go back online
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        assert coordinator.data.is_online is True
+
+        # Go offline again
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        assert coordinator.data.is_online is False
+        assert coordinator.data.last_offline is not None
+        assert coordinator.data.last_offline >= first_offline

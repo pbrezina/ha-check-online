@@ -47,6 +47,7 @@ class CheckOnlineResult:
     target_results: dict[str, TargetResult]
     consecutive_failures: int
     last_online: datetime | None
+    last_offline: datetime | None
 
 
 class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
@@ -74,6 +75,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
         self._is_online: bool = True
         self._consecutive_failures: int = 0
         self._last_online: datetime | None = None
+        self._last_offline: datetime | None = None
 
         super().__init__(
             hass,
@@ -107,6 +109,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
             target_results=target_results,
             consecutive_failures=self._consecutive_failures,
             last_online=self._last_online,
+            last_offline=self._last_offline,
         )
 
     async def _async_update_data(self) -> CheckOnlineResult:
@@ -137,6 +140,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
         # All retries exhausted -- go offline
         self._is_online = False
         self._consecutive_failures += 1
+        self._last_offline = dt_util.utcnow()
         self.update_interval = timedelta(seconds=self._offline_interval)
         _LOGGER.warning("Network is offline after %d retries", self._retry_count)
         return self._make_result(False, target_results)
