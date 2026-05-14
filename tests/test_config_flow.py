@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
 from homeassistant.config_entries import SOURCE_IMPORT, SOURCE_USER
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.check_online.const import (
@@ -19,10 +19,6 @@ from custom_components.check_online.const import (
     CONF_TARGET_1,
     CONF_TARGET_2,
     CONF_TARGET_3,
-    DEFAULT_OFFLINE_INTERVAL,
-    DEFAULT_PING_TIMEOUT,
-    DEFAULT_RETRY_COUNT,
-    DEFAULT_RETRY_DELAY,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_TARGET_1,
     DEFAULT_TARGET_2,
@@ -41,18 +37,14 @@ class TestConfigFlowUser:
 
     async def test_show_form(self, hass: HomeAssistant) -> None:
         """Test that the form is shown with defaults."""
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": SOURCE_USER}
-        )
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
 
         assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "user"
 
     async def test_create_entry_with_defaults(self, hass: HomeAssistant) -> None:
         """Test creating an entry with default values."""
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": SOURCE_USER}
-        )
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             user_input={
@@ -71,9 +63,7 @@ class TestConfigFlowUser:
 
     async def test_create_entry_with_custom_targets(self, hass: HomeAssistant) -> None:
         """Test creating an entry with custom targets."""
-        result = await hass.config_entries.flow.async_init(
-            DOMAIN, context={"source": SOURCE_USER}
-        )
+        result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": SOURCE_USER})
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
             user_input={
@@ -92,9 +82,7 @@ class TestConfigFlowUser:
 class TestOptionsFlow:
     """Tests for the options flow."""
 
-    async def test_show_form_with_current_values(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_show_form_with_current_values(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         entry = MockConfigEntry(domain=DOMAIN, data={}, options=default_options)
         entry.add_to_hass(hass)
 
@@ -103,9 +91,7 @@ class TestOptionsFlow:
         assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
 
-    async def test_update_options(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_update_options(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         entry = MockConfigEntry(domain=DOMAIN, data={}, options=default_options)
         entry.add_to_hass(hass)
 

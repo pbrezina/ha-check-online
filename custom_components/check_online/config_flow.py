@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.config_entries import (
+    ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlow,
 )
 from homeassistant.core import callback
+import voluptuous as vol
 
 from .const import (
     CONF_OFFLINE_INTERVAL,
@@ -46,9 +47,7 @@ class CheckOnlineConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
         if user_input is not None:
             return self.async_create_entry(
@@ -68,9 +67,7 @@ class CheckOnlineConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(step_id="user", data_schema=USER_SCHEMA)
 
-    async def async_step_import(
-        self, import_data: dict[str, Any]
-    ) -> ConfigFlowResult:
+    async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle import from YAML."""
         self._async_abort_entries_match()
 
@@ -81,27 +78,17 @@ class CheckOnlineConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_TARGET_1: import_data[CONF_TARGET_1],
                 CONF_TARGET_2: import_data[CONF_TARGET_2],
                 CONF_TARGET_3: import_data[CONF_TARGET_3],
-                CONF_SCAN_INTERVAL: import_data.get(
-                    CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
-                ),
-                CONF_OFFLINE_INTERVAL: import_data.get(
-                    CONF_OFFLINE_INTERVAL, DEFAULT_OFFLINE_INTERVAL
-                ),
-                CONF_RETRY_DELAY: import_data.get(
-                    CONF_RETRY_DELAY, DEFAULT_RETRY_DELAY
-                ),
-                CONF_RETRY_COUNT: import_data.get(
-                    CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT
-                ),
-                CONF_PING_TIMEOUT: import_data.get(
-                    CONF_PING_TIMEOUT, DEFAULT_PING_TIMEOUT
-                ),
+                CONF_SCAN_INTERVAL: import_data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
+                CONF_OFFLINE_INTERVAL: import_data.get(CONF_OFFLINE_INTERVAL, DEFAULT_OFFLINE_INTERVAL),
+                CONF_RETRY_DELAY: import_data.get(CONF_RETRY_DELAY, DEFAULT_RETRY_DELAY),
+                CONF_RETRY_COUNT: import_data.get(CONF_RETRY_COUNT, DEFAULT_RETRY_COUNT),
+                CONF_PING_TIMEOUT: import_data.get(CONF_PING_TIMEOUT, DEFAULT_PING_TIMEOUT),
             },
         )
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: Any) -> CheckOnlineOptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> CheckOnlineOptionsFlow:
         """Return the options flow handler."""
         return CheckOnlineOptionsFlow()
 
@@ -109,9 +96,7 @@ class CheckOnlineConfigFlow(ConfigFlow, domain=DOMAIN):
 class CheckOnlineOptionsFlow(OptionsFlow):
     """Handle options for Check Online."""
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
@@ -137,9 +122,7 @@ class CheckOnlineOptionsFlow(OptionsFlow):
                 ): vol.All(int, vol.Range(min=10)),
                 vol.Required(
                     CONF_OFFLINE_INTERVAL,
-                    default=current.get(
-                        CONF_OFFLINE_INTERVAL, DEFAULT_OFFLINE_INTERVAL
-                    ),
+                    default=current.get(CONF_OFFLINE_INTERVAL, DEFAULT_OFFLINE_INTERVAL),
                 ): vol.All(int, vol.Range(min=5)),
                 vol.Required(
                     CONF_RETRY_DELAY,
