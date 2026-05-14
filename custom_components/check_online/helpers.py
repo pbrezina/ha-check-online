@@ -101,13 +101,13 @@ async def detect_ping_mode() -> PingMode:
     try:
         await icmplib_async_ping("127.0.0.1", count=0, timeout=0, privileged=True)
         return PingMode.PRIVILEGED
-    except IcmpSocketPermissionError:
+    except (IcmpSocketPermissionError, OSError):
         pass
 
     try:
         await icmplib_async_ping("127.0.0.1", count=0, timeout=0, privileged=False)
         return PingMode.UNPRIVILEGED
-    except IcmpSocketPermissionError:
+    except (IcmpSocketPermissionError, OSError):
         pass
 
     return PingMode.SUBPROCESS
