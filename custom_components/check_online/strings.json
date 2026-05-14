@@ -1,0 +1,68 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Check Online",
+        "description": "Configure the ping targets to monitor network connectivity.",
+        "data": {
+          "target_1": "Target 1 (IP or hostname)",
+          "target_2": "Target 2 (IP or hostname)",
+          "target_3": "Target 3 (IP or hostname)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Check Online is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Check Online Options",
+        "data": {
+          "target_1": "Target 1 (IP or hostname)",
+          "target_2": "Target 2 (IP or hostname)",
+          "target_3": "Target 3 (IP or hostname)",
+          "scan_interval": "Scan interval when online (seconds)",
+          "offline_interval": "Scan interval when offline (seconds)",
+          "retry_delay": "Retry delay (seconds)",
+          "retry_count": "Retry count before going offline",
+          "ping_timeout": "Ping timeout (milliseconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "online": {
+        "name": "Online"
+      },
+      "target_1_status": {
+        "name": "Target 1 status"
+      },
+      "target_2_status": {
+        "name": "Target 2 status"
+      },
+      "target_3_status": {
+        "name": "Target 3 status"
+      }
+    },
+    "sensor": {
+      "target_1_rtt": {
+        "name": "Target 1 RTT"
+      },
+      "target_2_rtt": {
+        "name": "Target 2 RTT"
+      },
+      "target_3_rtt": {
+        "name": "Target 3 RTT"
+      },
+      "last_online": {
+        "name": "Last online"
+      },
+      "consecutive_failures": {
+        "name": "Consecutive failures"
+      }
+    }
+  }
+}
