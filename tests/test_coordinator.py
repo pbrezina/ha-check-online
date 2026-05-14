@@ -214,12 +214,12 @@ class TestDnsIntegration:
 class TestLastOnline:
     """Tests for last_online timestamp tracking."""
 
-    async def test_none_when_never_transitioned(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
-        """last_online should be None when no offline->online transition has occurred."""
+    async def test_set_on_first_successful_ping(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """last_online should be set on the first successful ping after startup."""
         coordinator, _, _ = _make_coordinator(hass, default_options)
         coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
-        assert coordinator.data.last_online is None
+        assert coordinator.data.last_online is not None
 
     async def test_set_on_offline_to_online_transition(
         self, hass: HomeAssistant, default_options: dict[str, Any]
@@ -241,6 +241,33 @@ class TestLastOnline:
         await coordinator.async_refresh()
         assert coordinator.data.is_online is True
         assert coordinator.data.last_online is not None
+
+    async def test_updated_on_offline_to_online_after_initial(
+        self, hass: HomeAssistant, default_options: dict[str, Any]
+    ) -> None:
+        """last_online should be updated on offline->online even if already set by first ping."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        # First successful ping sets last_online
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        initial_last_online = coordinator.data.last_online
+        assert initial_last_online is not None
+
+        # Go offline
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        assert coordinator.data.is_online is False
+
+        # Go back online -- last_online should be updated
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        assert coordinator.data.is_online is True
+        assert coordinator.data.last_online is not None
+        assert coordinator.data.last_online >= initial_last_online
 
     async def test_preserved_when_offline(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
