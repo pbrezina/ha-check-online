@@ -31,6 +31,8 @@ from .const import (
     DOMAIN,
     PLATFORMS,
 )
+from .coordinator import CheckOnlineCoordinator
+from .helpers import DnsResolver, PingHelper, detect_ping_mode
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,9 +89,6 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Check Online from a config entry."""
-    from .coordinator import CheckOnlineCoordinator
-    from .helpers import DnsResolver, PingHelper, detect_ping_mode
-
     hass.data.setdefault(DOMAIN, {})
 
     # Detect ping mode once, cache for all entries
