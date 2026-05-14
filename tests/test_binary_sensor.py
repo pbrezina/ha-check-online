@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -41,7 +40,7 @@ def _make_result(
             "9.9.9.9": TargetResult(is_alive=target_3_alive, rtt=20.0 if target_3_alive else None),
         },
         consecutive_failures=0 if is_online else 1,
-        last_online=datetime(2026, 1, 1),
+        last_online=None,
         last_offline=None,
     )
 

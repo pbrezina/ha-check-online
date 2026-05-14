@@ -71,7 +71,7 @@ LAST_OFFLINE_SENSOR = CheckOnlineSensorDescription(
     translation_key="last_offline",
     device_class=SensorDeviceClass.TIMESTAMP,
     entity_category=EntityCategory.DIAGNOSTIC,
-    entity_registry_enabled_default=False,
+    entity_registry_enabled_default=True,
     value_fn=lambda data: data.last_offline,
 )
 

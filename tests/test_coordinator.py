@@ -214,18 +214,49 @@ class TestDnsIntegration:
 class TestLastOnline:
     """Tests for last_online timestamp tracking."""
 
-    async def test_set_when_online(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+    async def test_none_when_never_transitioned(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """last_online should be None when no offline->online transition has occurred."""
         coordinator, _, _ = _make_coordinator(hass, default_options)
         coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
+        assert coordinator.data.last_online is None
+
+    async def test_set_on_offline_to_online_transition(
+        self, hass: HomeAssistant, default_options: dict[str, Any]
+    ) -> None:
+        """last_online should be set when transitioning from offline to online."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        # Go offline
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        assert coordinator.data.is_online is False
+        assert coordinator.data.last_online is None
+
+        # Go back online
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        assert coordinator.data.is_online is True
         assert coordinator.data.last_online is not None
 
     async def test_preserved_when_offline(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
+        # Go offline then online to set last_online
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
         coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
         last_online = coordinator.data.last_online
         assert last_online is not None
+
+        # Go offline again
         coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",

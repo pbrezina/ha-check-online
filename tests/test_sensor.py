@@ -114,14 +114,14 @@ class TestLastOnlineSensor:
 class TestLastOfflineSensor:
     """Tests for the last_offline timestamp sensor."""
 
-    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+    async def test_enabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
         ent_reg = er.async_get(hass)
         entity = ent_reg.async_get("sensor.check_online_last_offline")
         assert entity is not None
-        assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+        assert entity.disabled_by is None
 
 
 class TestConsecutiveFailuresSensor:

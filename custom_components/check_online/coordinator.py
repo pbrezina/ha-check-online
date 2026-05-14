@@ -125,7 +125,6 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
         """Handle update when currently online."""
         if self._any_alive(target_results):
             self._consecutive_failures = 0
-            self._last_online = dt_util.utcnow()
             return self._make_result(True, target_results)
 
         # All failed -- retry
@@ -134,7 +133,6 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
             target_results = await self._ping_all_targets()
             if self._any_alive(target_results):
                 self._consecutive_failures = 0
-                self._last_online = dt_util.utcnow()
                 return self._make_result(True, target_results)
 
         # All retries exhausted -- go offline
