@@ -44,9 +44,7 @@ class TestDnsResolver:
         """Hostname should be resolved via getaddrinfo."""
         hass = MagicMock()
         hass.async_add_executor_job = AsyncMock(
-            return_value=[
-                (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))
-            ]
+            return_value=[(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))]
         )
         resolver = DnsResolver(hass)
 
@@ -58,9 +56,7 @@ class TestDnsResolver:
         """Second call within TTL should use cache, not call getaddrinfo."""
         hass = MagicMock()
         hass.async_add_executor_job = AsyncMock(
-            return_value=[
-                (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))
-            ]
+            return_value=[(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))]
         )
         resolver = DnsResolver(hass, ttl=3600)
 
@@ -73,9 +69,7 @@ class TestDnsResolver:
         """After TTL expires, should resolve again."""
         hass = MagicMock()
         hass.async_add_executor_job = AsyncMock(
-            return_value=[
-                (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))
-            ]
+            return_value=[(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))]
         )
         resolver = DnsResolver(hass, ttl=1)
 
@@ -101,9 +95,7 @@ class TestDnsResolver:
         """DNS failure should clear any previously cached entry."""
         hass = MagicMock()
         hass.async_add_executor_job = AsyncMock(
-            return_value=[
-                (socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))
-            ]
+            return_value=[(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 0))]
         )
         resolver = DnsResolver(hass, ttl=1)
 

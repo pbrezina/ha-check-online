@@ -6,13 +6,11 @@ from datetime import timedelta
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.check_online.const import (
     CONF_OFFLINE_INTERVAL,
-    CONF_RETRY_COUNT,
     CONF_RETRY_DELAY,
     CONF_SCAN_INTERVAL,
     CONF_TARGET_1,
@@ -81,35 +79,23 @@ def _one_alive(options: dict[str, Any]) -> dict[str, TargetResult]:
 class TestOnlineState:
     """Tests for behavior when coordinator is in ONLINE state."""
 
-    async def test_stays_online_when_all_respond(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_stays_online_when_all_respond(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_alive(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
         assert coordinator.data.is_online is True
         assert coordinator.data.consecutive_failures == 0
 
-    async def test_stays_online_when_one_responds(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_stays_online_when_one_responds(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_one_alive(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_one_alive(default_options))
         await coordinator.async_refresh()
         assert coordinator.data.is_online is True
 
-    async def test_retries_before_going_offline(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_retries_before_going_offline(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         """All pings fail -> should retry retry_count times before going offline."""
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_dead(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",
             new_callable=AsyncMock,
@@ -121,14 +107,10 @@ class TestOnlineState:
         assert mock_sleep.call_count == 2
         mock_sleep.assert_called_with(default_options[CONF_RETRY_DELAY])
 
-    async def test_retry_succeeds_stays_online(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_retry_succeeds_stays_online(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         """First ping fails, retry succeeds -> stay online."""
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            side_effect=[_all_dead(default_options), _all_alive(default_options)]
-        )
+        coordinator._ping_all_targets = AsyncMock(side_effect=[_all_dead(default_options), _all_alive(default_options)])
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",
             new_callable=AsyncMock,
@@ -137,21 +119,15 @@ class TestOnlineState:
         assert coordinator.data.is_online is True
         assert coordinator.data.consecutive_failures == 0
 
-    async def test_interval_changes_to_offline(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_interval_changes_to_offline(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_dead(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",
             new_callable=AsyncMock,
         ):
             await coordinator.async_refresh()
-        assert coordinator.update_interval == timedelta(
-            seconds=default_options[CONF_OFFLINE_INTERVAL]
-        )
+        assert coordinator.update_interval == timedelta(seconds=default_options[CONF_OFFLINE_INTERVAL])
 
 
 class TestOfflineState:
@@ -163,9 +139,7 @@ class TestOfflineState:
         options: dict[str, Any],
     ) -> None:
         """Helper: drive coordinator to OFFLINE state."""
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_dead(options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(options))
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",
             new_callable=AsyncMock,
@@ -173,42 +147,28 @@ class TestOfflineState:
             await coordinator.async_refresh()
         assert coordinator.data.is_online is False
 
-    async def test_goes_online_on_success(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_goes_online_on_success(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
         await self._go_offline(coordinator, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_alive(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
         assert coordinator.data.is_online is True
         assert coordinator.data.consecutive_failures == 0
-        assert coordinator.update_interval == timedelta(
-            seconds=default_options[CONF_SCAN_INTERVAL]
-        )
+        assert coordinator.update_interval == timedelta(seconds=default_options[CONF_SCAN_INTERVAL])
 
-    async def test_stays_offline_on_failure(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_stays_offline_on_failure(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
         await self._go_offline(coordinator, default_options)
         failures_after_first_offline = coordinator.data.consecutive_failures
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_dead(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
         await coordinator.async_refresh()
         assert coordinator.data.is_online is False
         assert coordinator.data.consecutive_failures == failures_after_first_offline + 1
 
-    async def test_one_alive_enough_to_go_online(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_one_alive_enough_to_go_online(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
         await self._go_offline(coordinator, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_one_alive(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_one_alive(default_options))
         await coordinator.async_refresh()
         assert coordinator.data.is_online is True
 
@@ -234,9 +194,7 @@ class TestDnsIntegration:
             await coordinator.async_refresh()
         assert coordinator.data.is_online is False
 
-    async def test_dns_failure_for_one_target(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_dns_failure_for_one_target(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         """DNS failure for one target should not bring everything offline."""
         coordinator, mock_ping, mock_dns = _make_coordinator(hass, default_options)
 
@@ -256,29 +214,19 @@ class TestDnsIntegration:
 class TestLastOnline:
     """Tests for last_online timestamp tracking."""
 
-    async def test_set_when_online(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_set_when_online(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_alive(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
         assert coordinator.data.last_online is not None
 
-    async def test_preserved_when_offline(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_preserved_when_offline(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_alive(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
         await coordinator.async_refresh()
         last_online = coordinator.data.last_online
         assert last_online is not None
-        coordinator._ping_all_targets = AsyncMock(
-            return_value=_all_dead(default_options)
-        )
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",
             new_callable=AsyncMock,

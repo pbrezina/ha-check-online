@@ -37,6 +37,13 @@ TARGET_RTT_SENSORS: list[tuple[str, str]] = [
 ]
 
 
+def _make_rtt_value_fn(target: str) -> Callable[[CheckOnlineResult], StateType | datetime]:
+    def _value_fn(data: CheckOnlineResult) -> StateType | datetime:
+        return data.target_results[target].rtt if target in data.target_results else None
+
+    return _value_fn
+
+
 def _make_rtt_description(target: str, key: str) -> CheckOnlineSensorDescription:
     return CheckOnlineSensorDescription(
         key=key,
@@ -46,9 +53,7 @@ def _make_rtt_description(target: str, key: str) -> CheckOnlineSensorDescription
         state_class=SensorStateClass.MEASUREMENT,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        value_fn=lambda data, t=target: (
-            data.target_results[t].rtt if t in data.target_results else None
-        ),
+        value_fn=_make_rtt_value_fn(target),
     )
 
 
@@ -87,10 +92,7 @@ async def async_setup_entry(
     descriptions.append(LAST_ONLINE_SENSOR)
     descriptions.append(CONSECUTIVE_FAILURES_SENSOR)
 
-    async_add_entities(
-        CheckOnlineSensor(coordinator, entry.entry_id, desc)
-        for desc in descriptions
-    )
+    async_add_entities(CheckOnlineSensor(coordinator, entry.entry_id, desc) for desc in descriptions)
 
 
 class CheckOnlineSensor(CheckOnlineEntity, SensorEntity):

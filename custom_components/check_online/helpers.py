@@ -12,8 +12,8 @@ import socket
 import time
 
 from homeassistant.core import HomeAssistant
-from icmplib import async_ping as icmplib_async_ping
 from icmplib import SocketPermissionError as IcmpSocketPermissionError
+from icmplib import async_ping as icmplib_async_ping
 
 from .const import DEFAULT_DNS_TTL
 
@@ -66,7 +66,7 @@ class DnsResolver:
             self._cache.pop(host, None)
             return None
 
-        ip = result[0][4][0]
+        ip: str = str(result[0][4][0])
         self._cache[host] = DnsCacheEntry(
             ip_address=ip,
             expires_at=time.monotonic() + self._ttl,
@@ -176,4 +176,4 @@ class PingHelper:
     async def ping_all(self, ips: list[str]) -> dict[str, PingResult]:
         """Ping multiple IPs concurrently. Returns results keyed by IP."""
         results = await asyncio.gather(*(self.ping(ip) for ip in ips))
-        return dict(zip(ips, results))
+        return dict(zip(ips, results, strict=True))

@@ -6,12 +6,12 @@ from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, STATE_OFF, STATE_ON
+from homeassistant.const import STATE_OFF, STATE_ON, EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.check_online.const import DOMAIN
@@ -57,9 +57,7 @@ async def _setup_integration(
     mock_coordinator.last_update_success = True
     mock_coordinator.config_entry = entry
 
-    async def mock_setup_entry(
-        hass: HomeAssistant, entry: ConfigEntry
-    ) -> bool:
+    async def mock_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.runtime_data = mock_coordinator
         await hass.config_entries.async_forward_entry_setups(entry, ["binary_sensor"])
         return True
@@ -77,9 +75,7 @@ async def _setup_integration(
 class TestOnlineBinarySensor:
     """Tests for the main Online binary sensor."""
 
-    async def test_online_state_on(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_online_state_on(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result(is_online=True)
         await _setup_integration(hass, default_options, result)
 
@@ -87,9 +83,7 @@ class TestOnlineBinarySensor:
         assert state is not None
         assert state.state == STATE_ON
 
-    async def test_online_state_off(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_online_state_off(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result(is_online=False)
         await _setup_integration(hass, default_options, result)
 
@@ -97,9 +91,7 @@ class TestOnlineBinarySensor:
         assert state is not None
         assert state.state == STATE_OFF
 
-    async def test_device_class_is_connectivity(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_device_class_is_connectivity(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -107,9 +99,7 @@ class TestOnlineBinarySensor:
         assert state is not None
         assert state.attributes.get("device_class") == BinarySensorDeviceClass.CONNECTIVITY
 
-    async def test_enabled_by_default(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_enabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -122,9 +112,7 @@ class TestOnlineBinarySensor:
 class TestTargetBinarySensors:
     """Tests for per-target status binary sensors."""
 
-    async def test_disabled_by_default(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -133,9 +121,7 @@ class TestTargetBinarySensors:
         assert entity is not None
         assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
 
-    async def test_entity_category_diagnostic(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_entity_category_diagnostic(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 

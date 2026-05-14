@@ -41,18 +41,21 @@ TARGET_SENSORS: list[tuple[str, str]] = [
 ]
 
 
-def _make_target_description(
-    target: str, key: str
-) -> CheckOnlineBinarySensorDescription:
+def _make_target_value_fn(target: str) -> Callable[[CheckOnlineResult], bool]:
+    def _value_fn(data: CheckOnlineResult) -> bool:
+        return data.target_results[target].is_alive if target in data.target_results else False
+
+    return _value_fn
+
+
+def _make_target_description(target: str, key: str) -> CheckOnlineBinarySensorDescription:
     return CheckOnlineBinarySensorDescription(
         key=key,
         translation_key=key,
         device_class=BinarySensorDeviceClass.CONNECTIVITY,
         entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
-        value_fn=lambda data, t=target: (
-            data.target_results[t].is_alive if t in data.target_results else False
-        ),
+        value_fn=_make_target_value_fn(target),
     )
 
 
@@ -69,10 +72,7 @@ async def async_setup_entry(
         target = entry.options[conf_key]
         descriptions.append(_make_target_description(target, entity_key))
 
-    async_add_entities(
-        CheckOnlineBinarySensor(coordinator, entry.entry_id, desc)
-        for desc in descriptions
-    )
+    async_add_entities(CheckOnlineBinarySensor(coordinator, entry.entry_id, desc) for desc in descriptions)
 
 
 class CheckOnlineBinarySensor(CheckOnlineEntity, BinarySensorEntity):

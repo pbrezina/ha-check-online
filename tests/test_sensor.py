@@ -6,11 +6,11 @@ from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
-import pytest
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.check_online.const import DOMAIN
@@ -58,9 +58,7 @@ async def _setup_integration(
     mock_coordinator.last_update_success = True
     mock_coordinator.config_entry = entry
 
-    async def mock_setup_entry(
-        hass: HomeAssistant, entry: ConfigEntry
-    ) -> bool:
+    async def mock_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.runtime_data = mock_coordinator
         await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
         return True
@@ -78,9 +76,7 @@ async def _setup_integration(
 class TestRttSensors:
     """Tests for round-trip time sensors."""
 
-    async def test_all_disabled_by_default(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_all_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -90,9 +86,7 @@ class TestRttSensors:
             assert entity is not None
             assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
 
-    async def test_entity_category_diagnostic(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_entity_category_diagnostic(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -105,9 +99,7 @@ class TestRttSensors:
 class TestLastOnlineSensor:
     """Tests for the last_online timestamp sensor."""
 
-    async def test_disabled_by_default(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 
@@ -120,9 +112,7 @@ class TestLastOnlineSensor:
 class TestConsecutiveFailuresSensor:
     """Tests for the consecutive_failures sensor."""
 
-    async def test_disabled_by_default(
-        self, hass: HomeAssistant, default_options: dict[str, Any]
-    ) -> None:
+    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         result = _make_result()
         await _setup_integration(hass, default_options, result)
 

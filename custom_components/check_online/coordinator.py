@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -101,9 +101,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
     def _any_alive(self, results: dict[str, TargetResult]) -> bool:
         return any(r.is_alive for r in results.values())
 
-    def _make_result(
-        self, is_online: bool, target_results: dict[str, TargetResult]
-    ) -> CheckOnlineResult:
+    def _make_result(self, is_online: bool, target_results: dict[str, TargetResult]) -> CheckOnlineResult:
         return CheckOnlineResult(
             is_online=is_online,
             target_results=target_results,
@@ -120,9 +118,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
 
         return self._handle_offline_state(target_results)
 
-    async def _handle_online_state(
-        self, target_results: dict[str, TargetResult]
-    ) -> CheckOnlineResult:
+    async def _handle_online_state(self, target_results: dict[str, TargetResult]) -> CheckOnlineResult:
         """Handle update when currently online."""
         if self._any_alive(target_results):
             self._consecutive_failures = 0
@@ -145,9 +141,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
         _LOGGER.warning("Network is offline after %d retries", self._retry_count)
         return self._make_result(False, target_results)
 
-    def _handle_offline_state(
-        self, target_results: dict[str, TargetResult]
-    ) -> CheckOnlineResult:
+    def _handle_offline_state(self, target_results: dict[str, TargetResult]) -> CheckOnlineResult:
         """Handle update when currently offline."""
         if self._any_alive(target_results):
             self._is_online = True
