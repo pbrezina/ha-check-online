@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+from unittest.mock import AsyncMock, patch
 
 from homeassistant.config_entries import SOURCE_IMPORT, SOURCE_USER
 from homeassistant.core import HomeAssistant
@@ -30,6 +31,17 @@ from custom_components.check_online.const import (
 @pytest.fixture(autouse=True)
 def _enable_custom_integrations(enable_custom_integrations: None) -> None:
     """Enable loading of custom integrations in all tests in this module."""
+
+
+@pytest.fixture(autouse=True)
+def _mock_setup_entry() -> None:
+    """Prevent actual setup of config entries in config flow tests."""
+    with patch(
+        "custom_components.check_online.async_setup_entry",
+        new_callable=AsyncMock,
+        return_value=True,
+    ):
+        yield
 
 
 class TestConfigFlowUser:
