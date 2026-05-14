@@ -196,6 +196,16 @@ Note: `async_setup` is only called when there is YAML configuration. Privilege d
 
 1. Unload platforms via `async_unload_platforms(entry, PLATFORMS)`.
 
+## Development Environment
+
+Use the project's virtual environment for all commands (pytest, ruff, mypy, etc.):
+
+```bash
+WORKON_HOME=/home/pbrezina/workspace/.venvs workon ha-check-online
+```
+
+The venv lives at `/home/pbrezina/workspace/.venvs/ha-check-online`. Always source this before running tests or linting. Note: `$MY_WORKSPACE` resolves to `/home/pbrezina/workspace`.
+
 ## Tooling & Code Quality
 
 ### Code Style
