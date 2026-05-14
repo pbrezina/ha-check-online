@@ -66,6 +66,15 @@ LAST_ONLINE_SENSOR = CheckOnlineSensorDescription(
     value_fn=lambda data: data.last_online,
 )
 
+LAST_OFFLINE_SENSOR = CheckOnlineSensorDescription(
+    key="last_offline",
+    translation_key="last_offline",
+    device_class=SensorDeviceClass.TIMESTAMP,
+    entity_category=EntityCategory.DIAGNOSTIC,
+    entity_registry_enabled_default=False,
+    value_fn=lambda data: data.last_offline,
+)
+
 CONSECUTIVE_FAILURES_SENSOR = CheckOnlineSensorDescription(
     key="consecutive_failures",
     translation_key="consecutive_failures",
@@ -90,6 +99,7 @@ async def async_setup_entry(
         descriptions.append(_make_rtt_description(target, entity_key))
 
     descriptions.append(LAST_ONLINE_SENSOR)
+    descriptions.append(LAST_OFFLINE_SENSOR)
     descriptions.append(CONSECUTIVE_FAILURES_SENSOR)
 
     async_add_entities(CheckOnlineSensor(coordinator, entry.entry_id, desc) for desc in descriptions)

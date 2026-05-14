@@ -42,6 +42,7 @@ def _make_result(
         },
         consecutive_failures=0 if is_online else 1,
         last_online=datetime(2026, 1, 1),
+        last_offline=None,
     )
 
 

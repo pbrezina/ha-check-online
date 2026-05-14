@@ -33,6 +33,7 @@ def _make_result(
     rtt_3: float | None = 20.0,
     consecutive_failures: int = 0,
     last_online: datetime | None = None,
+    last_offline: datetime | None = None,
 ) -> CheckOnlineResult:
     return CheckOnlineResult(
         is_online=is_online,
@@ -43,6 +44,7 @@ def _make_result(
         },
         consecutive_failures=consecutive_failures,
         last_online=last_online,
+        last_offline=last_offline,
     )
 
 
@@ -105,6 +107,19 @@ class TestLastOnlineSensor:
 
         ent_reg = er.async_get(hass)
         entity = ent_reg.async_get("sensor.check_online_last_online")
+        assert entity is not None
+        assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
+
+
+class TestLastOfflineSensor:
+    """Tests for the last_offline timestamp sensor."""
+
+    async def test_disabled_by_default(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        result = _make_result()
+        await _setup_integration(hass, default_options, result)
+
+        ent_reg = er.async_get(hass)
+        entity = ent_reg.async_get("sensor.check_online_last_offline")
         assert entity is not None
         assert entity.disabled_by == er.RegistryEntryDisabler.INTEGRATION
 
