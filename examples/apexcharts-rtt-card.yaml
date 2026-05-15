@@ -1,0 +1,115 @@
+# Check Online - RTT & Connectivity Chart
+#
+# An apexcharts-card configuration that shows:
+# - RTT (round-trip time) line graphs for all 3 ping targets
+# - Green/red background bands indicating online/offline status
+#
+# Prerequisites:
+#   - apexcharts-card installed via HACS
+#     (https://github.com/RomRider/apexcharts-card)
+#
+# Usage:
+#   1. Open a dashboard in edit mode
+#   2. Add a new card -> Manual (YAML)
+#   3. Paste this configuration
+#   4. Adjust entity IDs if your entities have different names
+
+type: custom:apexcharts-card
+graph_span: 24h
+span:
+  end: hour
+update_interval: 1min
+header:
+  show: true
+  title: Network Connectivity
+  show_states: true
+  colorize_states: true
+yaxis:
+  - id: rtt
+    show: true
+    min: 0
+    decimals: 0
+    apex_config:
+      title:
+        text: "RTT (ms)"
+  - id: status
+    show: false
+    opposite: true
+    min: 0
+    max: 1
+series:
+  # Online status - green background band when online
+  - entity: binary_sensor.check_online_online
+    name: Online
+    type: area
+    curve: stepline
+    color: "#4CAF50"
+    yaxis_id: status
+    stroke_width: 0
+    opacity: 0.15
+    transform: "return x === 'on' ? 1 : 0;"
+    extend_to: end
+    fill_raw: last
+    group_by:
+      func: last
+      duration: 1min
+      fill: last
+    show:
+      legend_value: false
+      in_header: false
+  # Offline status - red background band when offline
+  - entity: binary_sensor.check_online_online
+    name: Offline
+    type: area
+    curve: stepline
+    color: "#F44336"
+    yaxis_id: status
+    stroke_width: 0
+    opacity: 0.15
+    transform: "return x === 'on' ? 0 : 1;"
+    extend_to: end
+    fill_raw: last
+    group_by:
+      func: last
+      duration: 1min
+      fill: last
+    show:
+      legend_value: false
+      in_header: false
+  # RTT lines for each ping target
+  - entity: sensor.check_online_target_1_rtt
+    name: Target 1
+    type: line
+    yaxis_id: rtt
+    curve: smooth
+    stroke_width: 2
+    float_precision: 1
+    extend_to: end
+    group_by:
+      func: avg
+      duration: 1min
+      fill: "null"
+  - entity: sensor.check_online_target_2_rtt
+    name: Target 2
+    type: line
+    yaxis_id: rtt
+    curve: smooth
+    stroke_width: 2
+    float_precision: 1
+    extend_to: end
+    group_by:
+      func: avg
+      duration: 1min
+      fill: "null"
+  - entity: sensor.check_online_target_3_rtt
+    name: Target 3
+    type: line
+    yaxis_id: rtt
+    curve: smooth
+    stroke_width: 2
+    float_precision: 1
+    extend_to: end
+    group_by:
+      func: avg
+      duration: 1min
+      fill: "null"
