@@ -20,6 +20,7 @@ from .const import (
     CONF_TARGET_2,
     CONF_TARGET_3,
     CONF_TARGETS,
+    DATA_PING_MODE,
     DEFAULT_OFFLINE_INTERVAL,
     DEFAULT_PING_TIMEOUT,
     DEFAULT_RETRY_COUNT,
@@ -56,8 +57,6 @@ CONFIG_SCHEMA = vol.Schema(
     },
     extra=vol.ALLOW_EXTRA,
 )
-
-DATA_PING_MODE = "ping_mode"
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:

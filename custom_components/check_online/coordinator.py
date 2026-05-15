@@ -6,6 +6,7 @@ import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -20,6 +21,8 @@ from .const import (
     CONF_TARGET_1,
     CONF_TARGET_2,
     CONF_TARGET_3,
+    DATA_LAST_OFFLINE,
+    DATA_LAST_ONLINE,
     DEFAULT_OFFLINE_INTERVAL,
     DEFAULT_RETRY_COUNT,
     DEFAULT_RETRY_DELAY,
@@ -74,8 +77,7 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
         self._dns_resolver = dns_resolver
         self._is_online: bool = True
         self._consecutive_failures: int = 0
-        self._last_online: datetime | None = None
-        self._last_offline: datetime | None = None
+        self._domain_data: dict[str, Any] = hass.data.setdefault(DOMAIN, {})
 
         super().__init__(
             hass,
@@ -84,6 +86,22 @@ class CheckOnlineCoordinator(DataUpdateCoordinator[CheckOnlineResult]):
             config_entry=config_entry,
             update_interval=timedelta(seconds=self._scan_interval),
         )
+
+    @property
+    def _last_online(self) -> datetime | None:
+        return self._domain_data.get(DATA_LAST_ONLINE)
+
+    @_last_online.setter
+    def _last_online(self, value: datetime) -> None:
+        self._domain_data[DATA_LAST_ONLINE] = value
+
+    @property
+    def _last_offline(self) -> datetime | None:
+        return self._domain_data.get(DATA_LAST_OFFLINE)
+
+    @_last_offline.setter
+    def _last_offline(self, value: datetime) -> None:
+        self._domain_data[DATA_LAST_OFFLINE] = value
 
     async def _resolve_and_ping(self, target: str) -> tuple[str, TargetResult]:
         """Resolve DNS and ping a single target."""

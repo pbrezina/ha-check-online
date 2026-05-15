@@ -224,9 +224,7 @@ class TestLastOnline:
     async def test_set_on_first_successful_retry(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
         """last_online should be set even if only a retry succeeds on the first poll."""
         coordinator, _, _ = _make_coordinator(hass, default_options)
-        coordinator._ping_all_targets = AsyncMock(
-            side_effect=[_all_dead(default_options), _all_alive(default_options)]
-        )
+        coordinator._ping_all_targets = AsyncMock(side_effect=[_all_dead(default_options), _all_alive(default_options)])
         with patch(
             "custom_components.check_online.coordinator.asyncio.sleep",
             new_callable=AsyncMock,
@@ -379,3 +377,63 @@ class TestLastOffline:
         assert coordinator.data.is_online is False
         assert coordinator.data.last_offline is not None
         assert coordinator.data.last_offline >= first_offline
+
+
+class TestTimestampCaching:
+    """Tests that timestamps survive coordinator recreation (integration reload)."""
+
+    async def test_last_online_survives_reload(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """A new coordinator should pick up last_online from hass.data cache."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        cached_last_online = coordinator.data.last_online
+        assert cached_last_online is not None
+
+        # Simulate reload: create a new coordinator on the same hass instance
+        coordinator2, _, _ = _make_coordinator(hass, default_options)
+        coordinator2._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator2.async_refresh()
+        assert coordinator2.data.last_online == cached_last_online
+
+    async def test_last_offline_survives_reload(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """A new coordinator should pick up last_offline from hass.data cache."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        cached_last_offline = coordinator.data.last_offline
+        assert cached_last_offline is not None
+
+        # Simulate reload: create a new coordinator on the same hass instance
+        coordinator2, _, _ = _make_coordinator(hass, default_options)
+        coordinator2._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator2.async_refresh()
+        assert coordinator2.data.last_offline == cached_last_offline
+
+    async def test_both_survive_reload(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """Both timestamps should survive a coordinator recreation."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        # Go online then offline to set both timestamps
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator.async_refresh()
+        coordinator._ping_all_targets = AsyncMock(return_value=_all_dead(default_options))
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        cached_last_online = coordinator.data.last_online
+        cached_last_offline = coordinator.data.last_offline
+        assert cached_last_online is not None
+        assert cached_last_offline is not None
+
+        # Simulate reload
+        coordinator2, _, _ = _make_coordinator(hass, default_options)
+        coordinator2._ping_all_targets = AsyncMock(return_value=_all_alive(default_options))
+        await coordinator2.async_refresh()
+        assert coordinator2.data.last_online == cached_last_online
+        assert coordinator2.data.last_offline == cached_last_offline
