@@ -58,10 +58,10 @@
         "name": "Target 3 RTT"
       },
       "last_online": {
-        "name": "Last online"
+        "name": "Last transition to online"
       },
       "last_offline": {
-        "name": "Last offline"
+        "name": "Last transition to offline"
       },
       "consecutive_failures": {
         "name": "Consecutive failures"
