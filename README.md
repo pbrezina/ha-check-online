@@ -92,7 +92,3 @@ The ping method is auto-detected at startup: privileged ICMP, unprivileged ICMP,
 ## Requirements
 
 - Home Assistant 2024.5.0 or newer
-
-## License
-
-MIT
