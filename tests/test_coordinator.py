@@ -221,6 +221,20 @@ class TestLastOnline:
         await coordinator.async_refresh()
         assert coordinator.data.last_online is not None
 
+    async def test_set_on_first_successful_retry(self, hass: HomeAssistant, default_options: dict[str, Any]) -> None:
+        """last_online should be set even if only a retry succeeds on the first poll."""
+        coordinator, _, _ = _make_coordinator(hass, default_options)
+        coordinator._ping_all_targets = AsyncMock(
+            side_effect=[_all_dead(default_options), _all_alive(default_options)]
+        )
+        with patch(
+            "custom_components.check_online.coordinator.asyncio.sleep",
+            new_callable=AsyncMock,
+        ):
+            await coordinator.async_refresh()
+        assert coordinator.data.is_online is True
+        assert coordinator.data.last_online is not None
+
     async def test_set_on_offline_to_online_transition(
         self, hass: HomeAssistant, default_options: dict[str, Any]
     ) -> None:
